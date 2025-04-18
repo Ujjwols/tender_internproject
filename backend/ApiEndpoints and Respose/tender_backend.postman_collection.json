@@ -1,0 +1,819 @@
+{
+	"info": {
+		"_postman_id": "5c48db4b-c4a9-463e-ae75-0a98969e12fb",
+		"name": "tender_backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39862865"
+	},
+	"item": [
+		{
+			"name": "committee",
+			"item": [
+				{
+					"name": "createcommittee",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Ethics Committee\",\r\n  \"purpose\": \"Review research proposals\",\r\n  \"formationDate\": \"2025-04-02\",\r\n  \"specificationSubmissionDate\": \"2025-04-09\",\r\n  \"reviewDate\": \"2025-04-16\",\r\n  \"schedule\": \"Monthly meetings\",\r\n  \"members\": [\"NTC001\"], // Array of employeeId strings\r\n  \"shouldNotify\": \"true\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/v1/committees/createcommittees",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"committees",
+								"createcommittees"
+							]
+						},
+						"description": "CreateCommitte for creating the committe  \nCalled in frontend  \nSrc-Components-Committe-Task-CommitteeForm"
+					},
+					"response": [
+						{
+							"status": "success",
+							"data": {
+								"committee": {
+									"formationLetter": null,
+									"_id": "67ee6375d4503d485df58f43",
+									"name": "Ethics Committee",
+									"purpose": "Review research proposals",
+									"formationDate": "2025-04-02T00:00:00.000Z",
+									"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+									"reviewDate": "2025-04-16T00:00:00.000Z",
+									"schedule": "Monthly meetings",
+									"members": [
+										{
+											"employeeId": "NTC001",
+											"name": "John Admin",
+											"role": "admin",
+											"email": "admin@ntc.net.np",
+											"department": "Administration",
+											"designation": "Chief Administrative Officer",
+											"_id": "67ee6375d4503d485df58f44"
+										}
+									],
+									"createdBy": {
+										"_id": "67e4c46ccba55b2bfd4e9e77",
+										"name": "John Admin",
+										"email": "admin@ntc.net.np",
+										"role": "admin",
+										"employeeId": "NTC001"
+									},
+									"createdAt": "2025-04-03T10:31:17.317Z",
+									"updatedAt": "2025-04-03T10:31:17.317Z",
+									"__v": 0
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "getallcommittecreated",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/v1/committees/getallcommittee",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"committees",
+								"getallcommittee"
+							]
+						},
+						"description": "To get all the committee created"
+					},
+					"response": [
+						{
+							"status": "success",
+							"results": 12,
+							"data": {
+								"committees": [
+									{
+										"formationLetter": null,
+										"_id": "67ee6375d4503d485df58f43",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ee6375d4503d485df58f44"
+											}
+										],
+										"createdBy": {
+											"_id": "67e4c46ccba55b2bfd4e9e77",
+											"name": "John Admin",
+											"email": "admin@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC001"
+										},
+										"createdAt": "2025-04-03T10:31:17.317Z",
+										"updatedAt": "2025-04-03T10:31:17.317Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67ee630fd4503d485df58f38",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ee630fd4503d485df58f39"
+											}
+										],
+										"createdBy": {
+											"_id": "67e4c46ccba55b2bfd4e9e77",
+											"name": "John Admin",
+											"email": "admin@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC001"
+										},
+										"createdAt": "2025-04-03T10:29:35.179Z",
+										"updatedAt": "2025-04-03T10:29:35.179Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67ee5259d4503d485df58f1b",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ee5259d4503d485df58f1c"
+											}
+										],
+										"createdBy": {
+											"_id": "67e4c46ccba55b2bfd4e9e77",
+											"name": "John Admin",
+											"email": "admin@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC001"
+										},
+										"createdAt": "2025-04-03T09:18:17.327Z",
+										"updatedAt": "2025-04-03T09:18:17.327Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67ee47dad4503d485df58ef4",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ee47dad4503d485df58ef5"
+											}
+										],
+										"createdBy": {
+											"_id": "67ee35ce93d5b6af7e54b310",
+											"name": "apitest",
+											"email": "apitest@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC000"
+										},
+										"createdAt": "2025-04-03T08:33:30.501Z",
+										"updatedAt": "2025-04-03T08:33:30.501Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67ee47cdd4503d485df58eec",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ee47cdd4503d485df58eed"
+											}
+										],
+										"createdBy": {
+											"_id": "67ee35ce93d5b6af7e54b310",
+											"name": "apitest",
+											"email": "apitest@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC000"
+										},
+										"createdAt": "2025-04-03T08:33:17.729Z",
+										"updatedAt": "2025-04-03T08:33:17.729Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67ee35e493d5b6af7e54b316",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ee35e493d5b6af7e54b317"
+											}
+										],
+										"createdBy": {
+											"_id": "67ee35ce93d5b6af7e54b310",
+											"name": "apitest",
+											"email": "apitest@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC000"
+										},
+										"createdAt": "2025-04-03T07:16:52.218Z",
+										"updatedAt": "2025-04-03T07:16:52.218Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": {
+											"filename": "formationLetter-1743661968699-663936761.docx",
+											"path": "D:\\intern project\\backend\\uploads\\committees\\formationLetter-1743661968699-663936761.docx",
+											"originalname": "Letter.docx",
+											"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+											"size": 15443
+										},
+										"_id": "67ee2b90a72608568c15158a",
+										"name": "ujjwol",
+										"purpose": "asdasddd",
+										"formationDate": "2025-04-03T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-04T00:00:00.000Z",
+										"reviewDate": "2025-04-10T00:00:00.000Z",
+										"members": [
+											{
+												"employeeId": "EMP001",
+												"name": "John Smith",
+												"role": "bidder",
+												"email": "john.smith@ntc.net.np",
+												"department": "Technical",
+												"designation": "Technical",
+												"_id": "67ee2b90a72608568c15158b"
+											}
+										],
+										"createdBy": {
+											"_id": "67e4c46ccba55b2bfd4e9e77",
+											"name": "John Admin",
+											"email": "admin@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC001"
+										},
+										"createdAt": "2025-04-03T06:32:48.723Z",
+										"updatedAt": "2025-04-03T06:32:48.723Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": {
+											"filename": "formationLetter-1743658255525-151240615.docx",
+											"path": "D:\\intern project\\backend\\uploads\\committees\\formationLetter-1743658255525-151240615.docx",
+											"originalname": "Gopi dai document.docx",
+											"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+											"size": 26786
+										},
+										"_id": "67ee1d0f7dccf965e5b33faf",
+										"name": "ujjwol",
+										"purpose": "asdasddd",
+										"formationDate": "2025-04-03T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-08T00:00:00.000Z",
+										"reviewDate": "2025-04-09T00:00:00.000Z",
+										"members": [
+											{
+												"employeeId": "EMP001",
+												"name": "John Smith",
+												"role": "bidder",
+												"email": "john.smith@ntc.net.np",
+												"department": "Technical",
+												"designation": "Technical",
+												"_id": "67ee1d0f7dccf965e5b33fb0"
+											}
+										],
+										"createdBy": {
+											"_id": "67e4c46ccba55b2bfd4e9e77",
+											"name": "John Admin",
+											"email": "admin@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC001"
+										},
+										"createdAt": "2025-04-03T05:30:55.566Z",
+										"updatedAt": "2025-04-03T05:30:55.566Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": {
+											"filename": "formationLetter-1743591922786-592219777.docx",
+											"path": "D:\\intern project\\backend\\uploads\\committees\\formationLetter-1743591922786-592219777.docx",
+											"originalname": "To.docx",
+											"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+											"size": 14384
+										},
+										"_id": "67ed19f226bb8fb170d311b8",
+										"name": "adasd",
+										"purpose": "adasdasd",
+										"formationDate": "2025-04-09T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-12T00:00:00.000Z",
+										"reviewDate": "2025-04-24T00:00:00.000Z",
+										"members": [
+											{
+												"employeeId": "EMP001",
+												"name": "John Smith",
+												"role": "bidder",
+												"email": "john.smith@ntc.net.np",
+												"department": "Technical",
+												"designation": "Technical",
+												"_id": "67ed19f226bb8fb170d311b9"
+											}
+										],
+										"createdBy": {
+											"_id": "67e6399d0c37340f3d673591",
+											"name": "admin1",
+											"email": "admin1@gmail.com",
+											"role": "bidder",
+											"employeeId": "ntc111"
+										},
+										"createdAt": "2025-04-02T11:05:22.803Z",
+										"updatedAt": "2025-04-02T11:05:22.803Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": {
+											"filename": "formationLetter-1743590066305-91059860.docx",
+											"path": "D:\\intern project\\backend\\uploads\\committees\\formationLetter-1743590066305-91059860.docx",
+											"originalname": "To.docx",
+											"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+											"size": 14384
+										},
+										"_id": "67ed12b2e0f183695bec5130",
+										"name": "zevils",
+										"purpose": "dasdas",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-04T00:00:00.000Z",
+										"reviewDate": "2025-04-11T00:00:00.000Z",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ed12b2e0f183695bec5131"
+											}
+										],
+										"createdBy": {
+											"_id": "67e6399d0c37340f3d673591",
+											"name": "admin1",
+											"email": "admin1@gmail.com",
+											"role": "bidder",
+											"employeeId": "ntc111"
+										},
+										"createdAt": "2025-04-02T10:34:26.437Z",
+										"updatedAt": "2025-04-02T10:34:26.437Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67ecf761a55ab7ddffb73714",
+										"name": "Ethics Committee",
+										"purpose": "Review research proposals",
+										"formationDate": "2025-04-02T00:00:00.000Z",
+										"specificationSubmissionDate": "2025-04-09T00:00:00.000Z",
+										"reviewDate": "2025-04-16T00:00:00.000Z",
+										"schedule": "Monthly meetings",
+										"members": [
+											{
+												"employeeId": "NTC001",
+												"name": "John Admin",
+												"role": "admin",
+												"email": "admin@ntc.net.np",
+												"department": "Administration",
+												"designation": "Chief Administrative Officer",
+												"_id": "67ecf761a55ab7ddffb73715"
+											}
+										],
+										"createdBy": {
+											"_id": "67e4c46ccba55b2bfd4e9e77",
+											"name": "John Admin",
+											"email": "admin@ntc.net.np",
+											"role": "admin",
+											"employeeId": "NTC001"
+										},
+										"createdAt": "2025-04-02T08:37:53.575Z",
+										"updatedAt": "2025-04-02T08:37:53.575Z",
+										"__v": 0
+									},
+									{
+										"formationLetter": null,
+										"_id": "67e8fe0ef146e43a7206218d",
+										"name": "Research Ethics Committee",
+										"purpose": "Review research proposals for ethical compliance",
+										"formationDate": "2023-05-20T00:00:00.000Z",
+										"specificationSubmissionDate": "2023-05-15T00:00:00.000Z",
+										"reviewDate": "2023-11-20T00:00:00.000Z",
+										"schedule": "Monthly meetings on first Wednesday",
+										"members": [
+											{
+												"name": "Dr. Smith",
+												"role": "Chairperson",
+												"email": "smith@university.edu",
+												"_id": "67e8fe0ef146e43a7206218e"
+											},
+											{
+												"name": "Prof. Johnson",
+												"role": "Secretary",
+												"email": "johnson@university.edu",
+												"_id": "67e8fe0ef146e43a7206218f"
+											}
+										],
+										"createdAt": "2025-03-30T08:17:18.241Z",
+										"__v": 0
+									}
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "getcommittebyid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/v1/committees/getcommitteebyid/67ee2b90a72608568c15158a",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"committees",
+								"getcommitteebyid",
+								"67ee2b90a72608568c15158a"
+							]
+						},
+						"description": "To get the committe by Committee Id"
+					},
+					"response": [
+						{
+							"status": "success",
+							"data": {
+								"committee": {
+									"formationLetter": {
+										"filename": "formationLetter-1743661968699-663936761.docx",
+										"path": "D:\\intern project\\backend\\uploads\\committees\\formationLetter-1743661968699-663936761.docx",
+										"originalname": "Letter.docx",
+										"mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+										"size": 15443
+									},
+									"_id": "67ee2b90a72608568c15158a",
+									"name": "ujjwol",
+									"purpose": "asdasddd",
+									"formationDate": "2025-04-03T00:00:00.000Z",
+									"specificationSubmissionDate": "2025-04-04T00:00:00.000Z",
+									"reviewDate": "2025-04-10T00:00:00.000Z",
+									"members": [
+										{
+											"employeeId": "EMP001",
+											"name": "John Smith",
+											"role": "bidder",
+											"email": "john.smith@ntc.net.np",
+											"department": "Technical",
+											"designation": "Technical",
+											"_id": "67ee2b90a72608568c15158b"
+										}
+									],
+									"createdBy": {
+										"_id": "67e4c46ccba55b2bfd4e9e77",
+										"name": "John Admin",
+										"email": "admin@ntc.net.np",
+										"role": "admin",
+										"employeeId": "NTC001"
+									},
+									"createdAt": "2025-04-03T06:32:48.723Z",
+									"updatedAt": "2025-04-03T06:32:48.723Z",
+									"__v": 0
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "signup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"apitest\",\r\n  \"email\": \"apitest@ntc.net.np\",\r\n  \"password\": \"test1234\",\r\n  \"role\": \"admin\",\r\n  \"employeeId\": \"NTC000\",\r\n  \"department\": \"Administration\",\r\n  \"phoneNumber\": \"+977-1234567890\",\r\n  \"designation\": \"Chief Administrative Officer\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/v1/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "User Registration  \ncalled in frontend  \n  \nSrc-Component-Context-Authcontext  \nThen the fetched all is called in the LoginForm  \nSrc-Component-Auth-Registration"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@ntc.net.np\",\r\n    \"password\": \"test1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/v1/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login Api called\n\ncalled in frontend  \n  \nSrc-Component-Context-Authcontext  \nThen the fetched all is called in the LoginForm  \nSrc-Component-Auth-Login"
+					},
+					"response": [
+						{
+							"status": "success",
+							"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTRjNDZjY2JhNTViMmJmZDRlOWU3NyIsImlhdCI6MTc0MzY3NjI2N30.ZYYI2bnpEFUeHL39yNC2M7mOmzjlA1vxa_v-qZuesNw",
+							"data": {
+								"user": {
+									"_id": "67e4c46ccba55b2bfd4e9e77",
+									"name": "John Admin",
+									"email": "admin@ntc.net.np",
+									"role": "admin",
+									"employeeId": "NTC001",
+									"department": "Administration",
+									"phoneNumber": "+977-1234567890",
+									"designation": "Chief Administrative Officer",
+									"isActive": true,
+									"otpEnabled": false,
+									"permissions": [],
+									"__v": 0
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "getbyemployeeid",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/v1/auth/employee/NTC001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"employee",
+								"NTC001"
+							]
+						},
+						"description": "Fetch Employee by Thier ID"
+					},
+					"response": [
+						{
+							"status": "success",
+							"data": {
+								"user": {
+									"_id": "67e4c46ccba55b2bfd4e9e77",
+									"name": "John Admin",
+									"email": "admin@ntc.net.np",
+									"role": "admin",
+									"employeeId": "NTC001",
+									"department": "Administration",
+									"phoneNumber": "+977-1234567890",
+									"designation": "Chief Administrative Officer",
+									"isActive": true,
+									"otpEnabled": false,
+									"permissions": [],
+									"__v": 0
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "getallusers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/v1/auth/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"users"
+							]
+						},
+						"description": "Get all the register users  \n  \ncalled in frontend  \n  \nSrc-Component-Context-Authcontext  \nThen the fetched all is called in the LoginForm  \nSrc-Component-employee-employeelist"
+					},
+					"response": [
+						{
+							"status": "success",
+							"results": 6,
+							"data": {
+								"users": [
+									{
+										"_id": "67e4c46ccba55b2bfd4e9e77",
+										"name": "John Admin",
+										"email": "admin@ntc.net.np",
+										"role": "admin",
+										"employeeId": "NTC001",
+										"department": "Administration",
+										"phoneNumber": "+977-1234567890",
+										"designation": "Chief Administrative Officer",
+										"isActive": true,
+										"otpEnabled": false,
+										"permissions": [],
+										"__v": 0
+									},
+									{
+										"_id": "67e5227b6b5766b55a564d5c",
+										"name": "test1",
+										"email": "test1@gmail.com",
+										"role": "bidder",
+										"employeeId": "ntc103",
+										"department": "it",
+										"phoneNumber": "9861599595",
+										"designation": "intern",
+										"isActive": true,
+										"otpEnabled": false,
+										"permissions": [],
+										"__v": 0
+									},
+									{
+										"_id": "67e6399d0c37340f3d673591",
+										"name": "admin1",
+										"email": "admin1@gmail.com",
+										"role": "bidder",
+										"employeeId": "ntc111",
+										"department": "IT",
+										"phoneNumber": "9851222222",
+										"designation": "intern",
+										"isActive": true,
+										"otpEnabled": false,
+										"permissions": [],
+										"__v": 0
+									},
+									{
+										"_id": "67ed19ec26bb8fb170d311b4",
+										"name": "John Smith",
+										"email": "john.smith@ntc.net.np",
+										"role": "bidder",
+										"employeeId": "EMP001",
+										"department": "Technical",
+										"phoneNumber": "+977-1234567890",
+										"designation": "Technical",
+										"isActive": true,
+										"otpEnabled": false,
+										"permissions": [],
+										"__v": 0
+									},
+									{
+										"_id": "67ee284ca72608568c15157d",
+										"name": "teste",
+										"email": "zevilsshrestha07@gmail.com",
+										"role": "bidder",
+										"employeeId": "NTC123",
+										"department": "IT",
+										"phoneNumber": "9851222222",
+										"designation": "intern",
+										"isActive": true,
+										"otpEnabled": false,
+										"permissions": [],
+										"__v": 0
+									},
+									{
+										"_id": "67ee35ce93d5b6af7e54b310",
+										"name": "apitest",
+										"email": "apitest@ntc.net.np",
+										"role": "admin",
+										"employeeId": "NTC000",
+										"department": "Administration",
+										"phoneNumber": "+977-1234567890",
+										"designation": "Chief Administrative Officer",
+										"isActive": true,
+										"otpEnabled": false,
+										"permissions": [],
+										"__v": 0
+									}
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
