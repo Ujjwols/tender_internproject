@@ -3,23 +3,40 @@ const User = require('../models/userModel.js');
 const AppError = require('../utils/appError.js');
 const catchAsync = require('../utils/catchAsync.js');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const winston = require('winston');
+
+// Set up Winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'logs/email.log' }),
+    new winston.transports.Console()
+  ]
+});
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: process.env.JWT_EXPIRES_IN, // e.g., '30d'
   });
 };
 
 const createSendToken = (user, statusCode, res) => {
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  const token = signToken(user._id);
   
-  // Simple 1-day cookie for testing
   res.cookie('jwt', token, {
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Secure in production
   });
 
   user.password = undefined;
+  user.otpCode = undefined;
+  user.otpExpires = undefined;
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -37,8 +54,8 @@ exports.register = catchAsync(async (req, res, next) => {
     department: req.body.department,
     phoneNumber: req.body.phoneNumber,
     designation: req.body.designation,
-    isActive: req.body.isActive || true,
-    otpEnabled: req.body.otpEnabled || false,
+    isActive: req.body.isActive ?? true,
+    otpEnabled: req.body.otpEnabled ?? true,
   });
   console.log('New user registered:', {
     timestamp: new Date().toISOString(),
@@ -56,47 +73,121 @@ exports.register = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   
-  // 1) Check if email and password exist
   if (!email || !password) {
     return next(new AppError('Please provide email and password!', 400));
   }
   
-  // 2) Check if user exists && password is correct
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password +otpCode +otpExpires');
   
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
   
-  // 3) Check if user is active
   if (!user.isActive) {
     return next(new AppError('Your account has been deactivated', 401));
   }
 
-  // Log successful login
-  console.log('User logged in successfully:', {
-    timestamp: new Date().toISOString(),
+  if (user.otpEnabled) {
+    const otp = user.createOTP();
+    await user.save({ validateBeforeSave: false });
+    
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_FROM,
+        to: user.email,
+        subject: 'Your OTP for Login',
+        html: `
+          <h1>One-Time Password (OTP)</h1>
+          <p>Hello ${user.name},</p>
+          <p>Your OTP for login is <strong>${otp}</strong>.</p>
+          <p>This OTP is valid for 10 minutes.</p>
+          <p>If you did not request this, please ignore this email.</p>
+        `,
+      });
+      logger.info('OTP email sent:', {
+        userId: user._id,
+        email: user.email,
+        timestamp: new Date().toISOString(),
+      });
+      
+      res.status(200).json({
+        status: 'otp_required',
+        message: 'OTP sent to your registered email',
+        userId: user._id,
+      });
+    } catch (error) {
+      user.otpCode = undefined;
+      user.otpExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      logger.error('Error sending OTP email:', {
+        userId: user._id,
+        email: user.email,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+      return next(new AppError('Failed to send OTP. Please try again.', 500));
+    }
+  } else {
+    console.log('User logged in successfully:', {
+      timestamp: new Date().toISOString(),
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+      employeeId: user.employeeId,
+      permissions: user.permissions,
+    });
+    
+    createSendToken(user, 200, res);
+  }
+});
+
+exports.verifyOTP = catchAsync(async (req, res, next) => {
+  const { userId, otp } = req.body;
+
+  if (!userId || !otp) {
+    return next(new AppError('Please provide user ID and OTP', 400));
+  }
+
+  const user = await User.findById(userId).select('+otpCode +otpExpires');
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (!user.otpCode || !user.otpExpires) {
+    return next(new AppError('No OTP request found', 400));
+  }
+
+  if (!user.verifyOTP(otp)) {
+    return next(new AppError('Invalid or expired OTP', 400));
+  }
+
+  user.otpCode = undefined;
+  user.otpExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  logger.info('OTP verified successfully:', {
     userId: user._id,
     email: user.email,
-    role: user.role,
-    employeeId: user.employeeId,
-    permissions: user.permissions,
+    timestamp: new Date().toISOString(),
   });
-  
-  // 4) If everything ok, send token to client
+
   createSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
-  // 1) Getting token
   let token;
   
-  // Check authorization header first
   if (req.headers.authorization?.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-  } 
-  // Then check cookies
-  else if (req.cookies?.jwt) {
+  } else if (req.cookies?.jwt) {
     token = req.cookies.jwt;
   }
 
@@ -104,18 +195,15 @@ exports.protect = catchAsync(async (req, res, next) => {
     return next(new AppError('Authentication required', 401));
   }
 
-  // 2) Verify token
   try {
     const decoded = await jwt.verify(token, process.env.JWT_SECRET);
     console.log('Token verified successfully for user:', decoded.id);
     
-    // 3) Check if user exists
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
       return next(new AppError('User no longer exists', 401));
     }
 
-    // 4) Check if password changed after token was issued
     if (currentUser.changedPasswordAfter(decoded.iat)) {
       return next(new AppError('Password changed - please log in again', 401));
     }
@@ -140,19 +228,15 @@ exports.restrictTo = (...roles) => {
 };
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new AppError('There is no user with that email address.', 404));
   }
   
-  // 2) Generate the random reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
   
-  // 3) Send it to user's email (mock implementation for now)
   try {
-    // In a real app, you would send an email here
     const resetURL = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/auth/reset-password/${resetToken}`;
@@ -160,7 +244,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       message: 'Token sent to email!',
-      token: resetToken, // In production, don't send the token in the response
+      token: resetToken, // Remove in production
     });
   } catch (err) {
     user.passwordResetToken = undefined;
@@ -174,7 +258,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on the token
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.token)
@@ -185,7 +268,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetExpires: { $gt: Date.now() },
   });
   
-  // 2) If token has not expired, and there is user, set the new password
   if (!user) {
     return next(new AppError('Token is invalid or has expired', 400));
   }
@@ -195,33 +277,25 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = undefined;
   await user.save();
   
-  // 3) Update changedPasswordAt property for the user
-  // This is handled in the User model pre-save middleware
-  
-  // 4) Log the user in, send JWT
   createSendToken(user, 200, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-  // 1) Get user from collection
   const user = await User.findById(req.user.id).select('+password');
   
-  // 2) Check if POSTed current password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(new AppError('Your current password is wrong.', 401));
   }
   
-  // 3) If so, update password
   user.password = req.body.password;
   await user.save();
   
-  // 4) Log user in, send JWT
   createSendToken(user, 200, res);
 });
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find().select('-password -otpCode -otpExpires');
     if (!users) throw new Error('No users found');
     
     res.status(200).json({
@@ -241,7 +315,7 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 exports.getUserByEmployeeId = catchAsync(async (req, res, next) => {
   const { employeeId } = req.params;
   
-  const user = await User.findOne({ employeeId }).select('-password');
+  const user = await User.findOne({ employeeId }).select('-password -otpCode -otpExpires');
   if (!user) {
     return next(new AppError('No user found with that employee ID', 404));
   }
@@ -257,7 +331,6 @@ exports.getUserByEmployeeId = catchAsync(async (req, res, next) => {
 exports.updateUser = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
   
-  // Fields that can be updated by admins
   const allowedUpdates = {
     name: req.body.name,
     email: req.body.email,
@@ -270,7 +343,6 @@ exports.updateUser = catchAsync(async (req, res, next) => {
     permissions: req.body.permissions,
   };
 
-  // Remove undefined fields
   Object.keys(allowedUpdates).forEach(
     (key) => allowedUpdates[key] === undefined && delete allowedUpdates[key]
   );
@@ -281,11 +353,9 @@ exports.updateUser = catchAsync(async (req, res, next) => {
       return next(new AppError('No user found with that ID', 404));
     }
 
-    // Update user fields
     Object.assign(user, allowedUpdates);
     await user.save({ validateBeforeSave: true });
 
-    // Log update
     console.log('User updated:', {
       timestamp: new Date().toISOString(),
       userId: user._id,
@@ -330,7 +400,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
       return next(new AppError('You cannot delete your own account', 403));
     }
 
-    await User.findByIdAndDelete(userId); // Replace user.remove()
+    await User.findByIdAndDelete(userId);
 
     console.log('User deleted:', {
       timestamp: new Date().toISOString(),
@@ -350,14 +420,12 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 });
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  // Prevent updating sensitive fields
   if (req.body.password || req.body.role || req.body.permissions || req.body.isActive) {
     return next(
       new AppError('This route is not for password, role, permissions, or status updates', 400)
     );
   }
 
-  // Fields that can be updated by the user themselves
   const allowedUpdates = {
     name: req.body.name,
     email: req.body.email,
@@ -367,7 +435,6 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     otpEnabled: req.body.otpEnabled,
   };
 
-  // Remove undefined fields
   Object.keys(allowedUpdates).forEach(
     (key) => allowedUpdates[key] === undefined && delete allowedUpdates[key]
   );
@@ -378,11 +445,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       return next(new AppError('User not found', 404));
     }
 
-    // Update user fields
     Object.assign(user, allowedUpdates);
     await user.save({ validateBeforeSave: true });
 
-    // Log update
     console.log('User updated their profile:', {
       timestamp: new Date().toISOString(),
       userId: user._id,

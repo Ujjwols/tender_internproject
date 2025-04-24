@@ -186,7 +186,7 @@ const CommitteeUpdate = () => {
         title: "Update Successful",
         description: "Committee has been updated.",
       });
-      navigate("/committees");
+      navigate("/");
     } catch (error) {
       toast({
         title: "Update Failed",

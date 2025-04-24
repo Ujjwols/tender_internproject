@@ -11,17 +11,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [userId, setUserId] = useState("");
+  const [showOtpForm, setShowOtpForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showResetForm, setShowResetForm] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string; resetEmail?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; otp?: string; resetEmail?: string }>({});
   
-  const { login } = useAuth();
+  const { login, verifyOTP } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Load remembered email if exists
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
     if (rememberedEmail) {
@@ -30,7 +32,7 @@ const LoginForm = () => {
     }
   }, []);
 
-  const validateForm = () => {
+  const validateLoginForm = () => {
     const newErrors: { email?: string; password?: string } = {};
     
     if (!email) {
@@ -43,6 +45,19 @@ const LoginForm = () => {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateOtpForm = () => {
+    const newErrors: { otp?: string } = {};
+    
+    if (!otp) {
+      newErrors.otp = "OTP is required";
+    } else if (!/^\d{6}$/.test(otp)) {
+      newErrors.otp = "OTP must be a 6-digit number";
     }
 
     setErrors(newErrors);
@@ -62,30 +77,78 @@ const LoginForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    if (!validateLoginForm()) {
       return;
     }
 
     setIsLoading(true);
     try {
-      const success = await login(email, password);
-      
-      if (success) {
+      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      if (data.status === 'otp_required') {
+        setUserId(data.userId);
+        setShowOtpForm(true);
+        toast({
+          title: "OTP Sent",
+          description: "Please check your email for the OTP.",
+        });
+      } else {
+        await login(data.token, data.data.user);
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
         } else {
           localStorage.removeItem("rememberedEmail");
         }
-        
         navigate('/');
       }
     } catch (error) {
       toast({
         title: "Login Failed",
         description: error instanceof Error ? error.message : "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateOtpForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const success = await verifyOTP(userId, otp);
+      if (success) {
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+        navigate('/');
+      }
+    } catch (error) {
+      toast({
+        title: "OTP Verification Failed",
+        description: error instanceof Error ? error.message : "Invalid or expired OTP.",
         variant: "destructive",
       });
     } finally {
@@ -140,8 +203,8 @@ const LoginForm = () => {
 
   return (
     <Card className="p-6 w-full max-w-md mx-auto mt-20">
-      {!showResetForm ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {!showResetForm && !showOtpForm ? (
+        <form onSubmit={handleLoginSubmit} className="space-y-4">
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-center">Login</h2>
             <p className="text-sm text-gray-500 text-center">
@@ -232,6 +295,59 @@ const LoginForm = () => {
               className="text-sm text-primary hover:underline"
             >
               Don't have an account? Register here
+            </button>
+          </div>
+        </form>
+      ) : showOtpForm ? (
+        <form onSubmit={handleOtpSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-center">Verify OTP</h2>
+            <p className="text-sm text-gray-500 text-center">
+              Enter the 6-digit OTP sent to your email
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="otp">
+              OTP
+            </label>
+            <Input
+              id="otp"
+              type="text"
+              value={otp}
+              onChange={(e) => {
+                setOtp(e.target.value);
+                setErrors({ ...errors, otp: undefined });
+              }}
+              placeholder="Enter 6-digit OTP"
+              className={errors.otp ? "border-red-500" : ""}
+            />
+            {errors.otp && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
+                {errors.otp}
+              </p>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            {isLoading ? "Verifying..." : "Verify OTP"}
+          </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setShowOtpForm(false);
+                setOtp("");
+                setUserId("");
+              }}
+              className="text-sm text-primary hover:underline"
+            >
+              Back to login
             </button>
           </div>
         </form>

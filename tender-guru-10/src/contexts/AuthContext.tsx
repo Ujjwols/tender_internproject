@@ -47,7 +47,8 @@ interface UpdateUserData {
 }
 
 interface AuthMethods {
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (token: string, user: User) => Promise<boolean>;
+  verifyOTP: (userId: string, otp: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
   hasPermission: (permission: string) => boolean;
@@ -91,39 +92,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [state.token]);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (token: string, user: User): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-  
       setState(prev => ({
         ...prev,
-        user: data.data.user,
+        user,
         isAuthenticated: true,
-        token: data.token,
+        token,
       }));
-  
+
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${data.data.user.name}!`,
+        description: `Welcome back, ${user.name}!`,
       });
       
       return true;
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        description: error instanceof Error ? error.message : "Failed to complete login",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const verifyOTP = async (userId: string, otp: string): Promise<boolean> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, otp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'OTP verification failed');
+      }
+
+      setState(prev => ({
+        ...prev,
+        user: data.data.user,
+        isAuthenticated: true,
+        token: data.token,
+      }));
+
+      toast({
+        title: "OTP Verified",
+        description: "Login successful!",
+      });
+
+      return true;
+    } catch (error) {
+      toast({
+        title: "OTP Verification Failed",
+        description: error instanceof Error ? error.message : "Invalid or expired OTP",
         variant: "destructive",
       });
       return false;
@@ -227,10 +253,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       toast({
         title: "Update Successful",
-        description: `User  has been updated.`,
+        description: `User has been updated.`,
       });
 
-      // Refetch employees to update the list
       await refetchEmployees();
       return true;
     } catch (error) {
@@ -263,7 +288,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "User has been deleted.",
       });
 
-      // Refetch employees to update the list
       await refetchEmployees();
       return true;
     } catch (error) {
@@ -301,6 +325,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{ 
       ...state,
       login,
+      verifyOTP,
       register,
       logout,
       hasPermission,

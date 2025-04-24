@@ -17,7 +17,7 @@ router.post(
     check('role', 'Role is required').not().isEmpty(),
     check('employeeId', 'Employee ID is required').not().isEmpty(),
     check('department', 'Department is required').not().isEmpty(),
-    check('phoneNumber', 'Phone number is required').not().isEmpty(),
+    check('phoneNumber', 'Phone number is required').isMobilePhone('any'),
     check('designation', 'Designation is required').not().isEmpty(),
   ],
   authController.register
@@ -32,15 +32,22 @@ router.post(
   authController.login
 );
 
+router.post(
+  '/verify-otp',
+  [
+    check('userId', 'User ID is required').not().isEmpty(),
+    check('otp', 'OTP is required').isLength({ min: 6, max: 6 }),
+  ],
+  authController.verifyOTP
+);
+
 router.get('/users', authController.getAllUsers);
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);
 router.get('/employee/:employeeId', authController.getUserByEmployeeId);
 
-// Protect all routes after this middleware
 router.use(authController.protect);
 
-// User self-update route
 router.patch(
   '/me/update',
   [
@@ -49,7 +56,6 @@ router.patch(
   authController.updateMe
 );
 
-// Admin-only routes for managing users
 router
   .route('/users/:userId')
   .patch(

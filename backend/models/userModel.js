@@ -58,13 +58,21 @@ const userSchema = new mongoose.Schema({
   },
   otpEnabled: {
     type: Boolean,
-    default: false,
+    default: true,
+  },
+  otpCode: {
+    type: String,
+    select: false,
+  },
+  otpExpires: {
+    type: Date,
+    select: false,
   },
   permissions: {
     type: [String],
     default: function () {
       const rolePermissions = {
-        admin: ['manage_users','manage_committees'],
+        admin: ['manage_users', 'manage_committees'],
         procurement_officer: [],
         committee_member: [],
         evaluator: [],
@@ -122,6 +130,21 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
   
   return resetToken;
+};
+
+// Method to create OTP
+userSchema.methods.createOTP = function () {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  this.otpCode = crypto.createHash('sha256').update(otp).digest('hex');
+  this.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  return otp;
+};
+
+// Method to verify OTP
+userSchema.methods.verifyOTP = function (candidateOTP) {
+  if (!this.otpCode || !this.otpExpires) return false;
+  const hashedOTP = crypto.createHash('sha256').update(candidateOTP).digest('hex');
+  return hashedOTP === this.otpCode && this.otpExpires > Date.now();
 };
 
 const User = mongoose.model('User', userSchema);
